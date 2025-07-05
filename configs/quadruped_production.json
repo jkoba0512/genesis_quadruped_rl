@@ -1,0 +1,48 @@
+{
+  "name": "quadruped_production",
+  "description": "Production configuration for full quadruped training",
+  "algorithm": "PPO",
+  "environment": {
+    "env_class": "EnhancedQuadrupedEnv",
+    "params": {
+      "simulation_fps": 200,
+      "control_freq": 50,
+      "episode_length": 2000,
+      "target_velocity": 1.2,
+      "target_height": 0.3
+    }
+  },
+  "ppo_params": {
+    "learning_rate": 3e-4,
+    "n_steps": 4096,
+    "batch_size": 128,
+    "n_epochs": 15,
+    "gamma": 0.995,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.005,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "device": "auto"
+  },
+  "training": {
+    "total_timesteps": 5000000,
+    "save_freq": 100000,
+    "eval_freq": 50000,
+    "eval_episodes": 10,
+    "tensorboard_log": "./logs/quadruped_production"
+  },
+  "parallel_envs": 16,
+  "reward_weights": {
+    "forward_velocity": 1.2,
+    "stability": 0.3,
+    "height_maintenance": 0.5,
+    "energy_efficiency": 0.15,
+    "action_smoothness": 0.15,
+    "gait_symmetry": 0.4,
+    "foot_contact": 0.3,
+    "orientation": 0.2,
+    "contact_force": 0.2,
+    "leg_coordination": 0.35
+  }
+}

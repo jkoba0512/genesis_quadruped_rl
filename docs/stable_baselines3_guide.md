@@ -1,6 +1,24 @@
-# Genesis Humanoid RL with Stable-Baselines3
+# Genesis Quadruped RL with Stable-Baselines3
 
-This project implements humanoid robot reinforcement learning using the Genesis physics engine and Stable-Baselines3 for robust, easy-to-use PPO training.
+This project implements quadruped robot reinforcement learning using the Genesis physics engine and Stable-Baselines3 for robust, easy-to-use PPO training.
+
+## 🎯 Current Training Implementation
+
+### GPU Memory-Safe Training
+The project now uses a **chunk-based training approach** with process isolation to prevent GPU memory accumulation:
+- **Chunk Size**: 50 episodes per process
+- **Automatic Restarts**: Fresh process for each chunk
+- **Memory Protection**: Complete GPU cleanup between chunks
+- **Resume Support**: Automatic continuation from interruptions
+
+### Active Training Script
+```bash
+# Run 5K episode training with GPU isolation
+./run_5k_with_isolation.sh
+
+# Or run individual chunks
+uv run python train_with_restarts.py --start_episode 0 --num_episodes 50 --total_target 5000
+```
 
 ## 🚀 Quick Start
 
@@ -36,13 +54,13 @@ uv run python scripts/evaluate_sb3.py ./models/test_sb3/final_model --episodes 1
 ## 📁 Project Structure
 
 ```
-genesis_humanoid_rl/
+genesis_quadruped_rl/
 ├── scripts/
 │   ├── train_sb3.py          # Main SB3 training script
 │   └── evaluate_sb3.py       # Model evaluation script
-├── src/genesis_humanoid_rl/
+├── src/genesis_quadruped_rl/
 │   └── environments/
-│       ├── humanoid_env.py   # Core environment
+│       ├── quadruped_env.py  # Core environment
 │       └── sb3_wrapper.py    # SB3-compatible wrapper
 ├── config_sb3_test.json     # Test configuration
 └── quick_sb3_test.py         # Setup verification
@@ -52,15 +70,15 @@ genesis_humanoid_rl/
 
 ### ✅ Complete Implementation
 - **Genesis Physics**: High-fidelity 100+ FPS simulation
-- **Unitree G1 Robot**: 35 DOF humanoid with automatic grounding
+- **Unitree Go2 Robot**: 12 DOF quadruped with automatic grounding
 - **Stable-Baselines3**: Production-ready PPO implementation
 - **Parallel Training**: Multi-environment support for faster learning
 - **TensorBoard Logging**: Real-time training monitoring
 - **Model Management**: Automatic saving, loading, and evaluation
 
 ### 🤖 Environment Details
-- **Observation Space**: 113-dimensional robot state vector
-- **Action Space**: 35-dimensional continuous joint control
+- **Observation Space**: ~50-dimensional robot state vector
+- **Action Space**: 12-dimensional continuous joint control
 - **Reward Function**: Walking performance with stability and energy efficiency
 - **Episode Length**: Configurable (default: 1000 steps)
 - **Physics Rate**: 100 FPS simulation, 20 Hz control
@@ -176,4 +194,4 @@ uv run python scripts/evaluate_sb3.py --compare ./models/sb3/best_model ./models
 4. **Scale Up**: Increase `n_envs` and `total_timesteps` for better performance
 5. **Experiment**: Try different reward functions or network architectures
 
-Start training your humanoid walking policy now! 🚶‍♂️🤖
+Start training your quadruped walking policy now! 🐕🤖

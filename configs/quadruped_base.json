@@ -1,0 +1,48 @@
+{
+  "name": "quadruped_base",
+  "description": "Base configuration for quadruped RL training",
+  "algorithm": "PPO",
+  "environment": {
+    "env_class": "EnhancedQuadrupedEnv",
+    "params": {
+      "simulation_fps": 100,
+      "control_freq": 20,
+      "episode_length": 1000,
+      "target_velocity": 1.0,
+      "target_height": 0.3
+    }
+  },
+  "ppo_params": {
+    "learning_rate": 3e-4,
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.01,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "device": "auto"
+  },
+  "training": {
+    "total_timesteps": 1000000,
+    "save_freq": 50000,
+    "eval_freq": 10000,
+    "eval_episodes": 5,
+    "tensorboard_log": "./logs/quadruped_base"
+  },
+  "parallel_envs": 8,
+  "reward_weights": {
+    "forward_velocity": 1.0,
+    "stability": 0.4,
+    "height_maintenance": 0.6,
+    "energy_efficiency": 0.1,
+    "action_smoothness": 0.1,
+    "gait_symmetry": 0.3,
+    "foot_contact": 0.2,
+    "orientation": 0.2,
+    "contact_force": 0.15,
+    "leg_coordination": 0.25
+  }
+}

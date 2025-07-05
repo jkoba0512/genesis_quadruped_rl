@@ -1,0 +1,48 @@
+{
+  "name": "quadruped_fast",
+  "description": "Fast training configuration for development and testing",
+  "algorithm": "PPO",
+  "environment": {
+    "env_class": "EnhancedQuadrupedEnv",
+    "params": {
+      "simulation_fps": 50,
+      "control_freq": 10,
+      "episode_length": 200,
+      "target_velocity": 0.5,
+      "target_height": 0.3
+    }
+  },
+  "ppo_params": {
+    "learning_rate": 5e-4,
+    "n_steps": 512,
+    "batch_size": 32,
+    "n_epochs": 5,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.02,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "device": "auto"
+  },
+  "training": {
+    "total_timesteps": 10000,
+    "save_freq": 2000,
+    "eval_freq": 1000,
+    "eval_episodes": 3,
+    "tensorboard_log": "./logs/quadruped_fast"
+  },
+  "parallel_envs": 4,
+  "reward_weights": {
+    "forward_velocity": 1.0,
+    "stability": 0.6,
+    "height_maintenance": 0.4,
+    "energy_efficiency": 0.05,
+    "action_smoothness": 0.05,
+    "gait_symmetry": 0.2,
+    "foot_contact": 0.1,
+    "orientation": 0.3,
+    "contact_force": 0.1,
+    "leg_coordination": 0.2
+  }
+}

@@ -1,0 +1,31 @@
+{
+    "env": {
+        "episode_length": 200,
+        "simulation_fps": 100,
+        "control_freq": 20,
+        "target_velocity": 0.5
+    },
+    "algorithm": {
+        "learning_rate": 3e-4,
+        "n_steps": 256,
+        "batch_size": 32,
+        "n_epochs": 5,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_range": 0.2,
+        "ent_coef": 0.01,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "policy_kwargs": {
+            "net_arch": [64, 64]
+        }
+    },
+    "training": {
+        "total_timesteps": 20000,
+        "save_freq": 5000,
+        "log_interval": 1,
+        "experiment_name": "go2_quick_demo",
+        "log_dir": "./logs/go2_quick_demo",
+        "model_dir": "./models/go2_quick_demo"
+    }
+}

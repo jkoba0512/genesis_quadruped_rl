@@ -1,6 +1,15 @@
-# Genesis Humanoid RL Documentation
+# Genesis Quadruped RL Documentation
 
-This directory contains comprehensive documentation for the Genesis Humanoid RL project.
+This directory contains comprehensive documentation for the Genesis Quadruped RL project.
+
+## 🎯 Current Training Status
+
+**Active Training Progress (as of latest update):**
+- 🏃 **Status**: Training in progress using chunk-based GPU isolation method
+- 📊 **Episodes Completed**: 250+ episodes (5 chunks × 50 episodes)
+- 🎥 **Video Chunks**: 3 progression videos recorded showcasing learning evolution
+- 🎯 **Target**: 5,000 total episodes for comprehensive training
+- 🖥️ **Hardware**: NVIDIA RTX 3060 Ti (8GB) with memory-safe chunking
 
 ## 📚 Documentation Structure
 
@@ -10,7 +19,10 @@ This directory contains comprehensive documentation for the Genesis Humanoid RL 
 - **[quickstart.md](quickstart.md)**: Step-by-step beginner guide
 
 ### Training & Configuration
+- **[TRAINING_PROGRESS.md](TRAINING_PROGRESS.md)**: 🆕 Current training status & metrics
 - **[stable_baselines3_guide.md](stable_baselines3_guide.md)**: Complete SB3 training guide
+- **[EXTENDED_TRAINING_PLAN.md](EXTENDED_TRAINING_PLAN.md)**: Comprehensive training roadmap
+- **[../12_HOUR_TRAINING_GUIDE.md](../12_HOUR_TRAINING_GUIDE.md)**: 12-hour training protocol
 - **[../configs/README.md](../configs/README.md)**: Configuration documentation
 - **[training_guide.md](training_guide.md)**: Advanced training techniques
 
@@ -18,9 +30,12 @@ This directory contains comprehensive documentation for the Genesis Humanoid RL 
 - **[environment_api.md](environment_api.md)**: Environment API reference
 - **[architecture.md](architecture.md)**: Project architecture overview
 - **[reward_function.md](reward_function.md)**: Reward function design
+- **[testing_infrastructure.md](testing_infrastructure.md)**: Testing framework documentation
+- **[database_migration_guide.md](database_migration_guide.md)**: Database optimization guide
 
 ### Research & Analysis
 - **[reward_function_analysis.png](reward_function_analysis.png)**: Reward function analysis
+- **[DEVELOPMENT_HISTORY.md](DEVELOPMENT_HISTORY.md)**: Project evolution timeline
 - **[performance_benchmarks.md](performance_benchmarks.md)**: Performance results
 - **[research_applications.md](research_applications.md)**: Research use cases
 
@@ -33,7 +48,10 @@ This directory contains comprehensive documentation for the Genesis Humanoid RL 
 
 | What you want to do | Documentation |
 |---------------------|---------------|
+| Check training progress | [TRAINING_PROGRESS.md](TRAINING_PROGRESS.md) 🆕 |
 | Get started quickly | [../README.md](../README.md) |
+| Run 12-hour training | [../12_HOUR_TRAINING_GUIDE.md](../12_HOUR_TRAINING_GUIDE.md) |
+| Continue chunk training | `./run_5k_with_isolation.sh` script |
 | Understand SB3 training | [stable_baselines3_guide.md](stable_baselines3_guide.md) |
 | Configure training | [../configs/README.md](../configs/README.md) |
 | Fix issues | [troubleshooting.md](troubleshooting.md) |
@@ -54,4 +72,4 @@ For new users, we recommend this reading order:
 
 - **[Genesis Documentation](https://genesis-world.readthedocs.io)**: Physics engine docs
 - **[Stable-Baselines3 Docs](https://stable-baselines3.readthedocs.io)**: RL algorithm docs
-- **[Unitree G1 Specs](https://www.unitree.com/g1)**: Robot specifications
+- **[Unitree Go2 Specs](https://www.unitree.com/go2)**: Robot specifications
