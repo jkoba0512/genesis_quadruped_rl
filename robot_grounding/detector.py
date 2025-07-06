@@ -13,7 +13,8 @@ class FootDetector:
     # Common foot-related keywords
     FOOT_KEYWORDS = [
         'foot', 'ankle', 'toe', 'sole', 'heel',
-        'end_effector', 'ee', 'contact'
+        'end_effector', 'ee', 'contact',
+        'calf'  # Added for quadruped robots like Go2
     ]
     
     # Keywords to exclude (usually hands)

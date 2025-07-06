@@ -7,9 +7,10 @@ This directory contains comprehensive documentation for the Genesis Quadruped RL
 **Active Training Progress (as of latest update):**
 - 🏃 **Status**: Training in progress using chunk-based GPU isolation method
 - 📊 **Episodes Completed**: 250+ episodes (5 chunks × 50 episodes)
-- 🎥 **Video Chunks**: 3 progression videos recorded showcasing learning evolution
+- 🎥 **Video Chunks**: 5 progression videos recorded showcasing learning evolution
 - 🎯 **Target**: 5,000 total episodes for comprehensive training
 - 🖥️ **Hardware**: NVIDIA RTX 3060 Ti (8GB) with memory-safe chunking
+- 🚀 **Performance**: Significant improvements with reward function redesign and extended grace period
 
 ## 📚 Documentation Structure
 
@@ -20,6 +21,7 @@ This directory contains comprehensive documentation for the Genesis Quadruped RL
 
 ### Training & Configuration
 - **[TRAINING_PROGRESS.md](TRAINING_PROGRESS.md)**: 🆕 Current training status & metrics
+- **[VIDEO_GENERATION_GUIDE.md](VIDEO_GENERATION_GUIDE.md)**: 🎬 Complete video generation guide
 - **[stable_baselines3_guide.md](stable_baselines3_guide.md)**: Complete SB3 training guide
 - **[EXTENDED_TRAINING_PLAN.md](EXTENDED_TRAINING_PLAN.md)**: Comprehensive training roadmap
 - **[../12_HOUR_TRAINING_GUIDE.md](../12_HOUR_TRAINING_GUIDE.md)**: 12-hour training protocol
@@ -49,6 +51,7 @@ This directory contains comprehensive documentation for the Genesis Quadruped RL
 | What you want to do | Documentation |
 |---------------------|---------------|
 | Check training progress | [TRAINING_PROGRESS.md](TRAINING_PROGRESS.md) 🆕 |
+| Generate videos from chunks | [VIDEO_GENERATION_GUIDE.md](VIDEO_GENERATION_GUIDE.md) 🎬 |
 | Get started quickly | [../README.md](../README.md) |
 | Run 12-hour training | [../12_HOUR_TRAINING_GUIDE.md](../12_HOUR_TRAINING_GUIDE.md) |
 | Continue chunk training | `./run_5k_with_isolation.sh` script |

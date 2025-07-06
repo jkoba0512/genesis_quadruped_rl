@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 
 from .detector import FootDetector
 from .utils import get_link_world_position, get_lowest_z_position, calculate_grounding_offset
+from .robot_types import RobotTypeDetector, RobotType
 
 
 class RobotGroundingCalculator:
@@ -33,12 +34,19 @@ class RobotGroundingCalculator:
         self.n_links = robot.n_links
         self.n_dofs = robot.n_dofs
         
+        # Detect robot type
+        self.robot_type = RobotTypeDetector.detect_robot_type(robot)
+        self.config = RobotTypeDetector.get_default_grounding_config(self.robot_type)
+        
         if self.verbose:
             print(f"Initialized RobotGroundingCalculator")
             print(f"  Robot links: {self.n_links}")
             print(f"  Robot DOFs: {self.n_dofs}")
+            print(f"  Detected type: {self.robot_type.value}")
+            print(f"  Fallback height: {self.config['fallback_height']:.3f}m")
+            print(f"  Expected feet: {self.config['expected_feet']}")
         
-        # Find foot links (will be implemented next)
+        # Find foot links using robot-specific configuration
         self.foot_links = self._detect_foot_links()
         
     def _detect_foot_links(self) -> List:
@@ -78,8 +86,8 @@ class RobotGroundingCalculator:
         # Check if we have foot links
         if not self.foot_links:
             if self.verbose:
-                print("  Warning: No foot links detected, using default height")
-            return 1.0  # Default fallback
+                print(f"  Warning: No foot links detected, using {self.robot_type.value} fallback")
+            return self.config['fallback_height'] + safety_margin
         
         # Get current base position
         base_pos = self.robot.get_pos()

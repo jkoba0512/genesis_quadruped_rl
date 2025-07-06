@@ -69,14 +69,14 @@ def main():
     # Add ground plane
     plane = scene.add_entity(gs.morphs.Plane())
 
-    # Add robot
+    # Add robot (Go2 quadruped)
     project_root = Path(__file__).parent.parent
-    urdf_path = project_root / "assets/robots/g1/g1_29dof.urdf"
+    urdf_path = project_root / "assets/robots/go2/urdf/go2_genesis.urdf"
 
     robot = scene.add_entity(
         gs.morphs.URDF(
             file=str(urdf_path),
-            pos=(0, 0, 1.0),
+            pos=(0, 0, 0.6),  # Higher position for Go2
         )
     )
 
@@ -104,14 +104,19 @@ def main():
     print("Building scene...")
     scene.build()
 
-    # Apply robot grounding
+    # Apply robot grounding for Go2
     print("Applying robot grounding...")
-    sys.path.insert(0, str(project_root))
-    from robot_grounding import RobotGroundingCalculator
-
-    calculator = RobotGroundingCalculator(robot, verbose=False)
-    grounding_height = calculator.get_grounding_height(safety_margin=0.03)
-    robot.set_pos([0, 0, grounding_height])
+    sys.path.insert(0, str(project_root / "src"))
+    try:
+        from genesis_quadruped_rl.robots.go2_loader import Go2Robot
+        # Use Go2 specific grounding
+        go2_loader = Go2Robot(scene, position=None, use_grounding=True)
+        grounding_height = 0.1  # Go2 natural height
+        robot.set_pos([0, 0, grounding_height])
+    except Exception as e:
+        print(f"Using default grounding: {e}")
+        grounding_height = 0.3
+        robot.set_pos([0, 0, grounding_height])
 
     # Stabilize robot
     for _ in range(10):
@@ -126,20 +131,36 @@ def main():
     # Create environment wrapper for RL model
     print("Creating environment wrapper...")
 
-    # Simple observation extraction
+    # Go2 observation extraction (matching the trained environment)
     def get_observation():
         pos = robot.get_pos().cpu().numpy()
         quat = robot.get_quat().cpu().numpy()
         joint_pos = robot.get_dofs_position().cpu().numpy()
         joint_vel = robot.get_dofs_velocity().cpu().numpy()
 
-        # Dummy previous action and target velocity
-        prev_action = np.zeros(len(joint_pos))
-        target_vel = np.array([1.0])
+        # Get only controllable joints (12 for Go2)
+        controllable_indices = list(range(1, 13))  # Skip base joint
+        controllable_joint_pos = joint_pos[controllable_indices]
+        controllable_joint_vel = joint_vel[controllable_indices]
 
-        return np.concatenate(
-            [pos, quat, joint_pos, joint_vel, prev_action, target_vel]
-        )
+        # Match the expected observation space (46 dimensions)
+        # Structure: [pos(3), quat(4), joint_pos(12), joint_vel(12), prev_action(12), target_vel(1), padding(2)]
+        prev_action = np.zeros(12)  # 12 controllable joints
+        target_vel = np.array([0.5])  # Target walking speed
+        padding = np.zeros(2)  # Add padding to reach 46 dimensions
+
+        observation = np.concatenate([
+            pos,                    # 3
+            quat,                   # 4
+            controllable_joint_pos, # 12
+            controllable_joint_vel, # 12
+            prev_action,           # 12
+            target_vel,            # 1
+            padding                # 2
+        ])
+        
+        print(f"Observation shape: {observation.shape}")  # Debug
+        return observation
 
     # Simulation and recording loop
     print(f"Recording {args.steps} steps...")
@@ -152,9 +173,18 @@ def main():
         # Get action from model
         action, _ = model.predict(obs, deterministic=True)
 
-        # Apply action to robot (simple position control)
+        # Apply action to robot (Go2 control)
         current_pos = robot.get_dofs_position().cpu()  # Move to CPU first
-        target_pos = current_pos + (action * 0.1)  # Small position changes
+        
+        # For Go2, apply action only to controllable joints (skip base joint)
+        controllable_indices = list(range(1, 13))  # Skip base joint
+        target_pos = current_pos.clone()
+        
+        # Apply actions to controllable joints only
+        for i, joint_idx in enumerate(controllable_indices):
+            if i < len(action):
+                target_pos[joint_idx] += action[i] * 0.05  # Smaller position changes for stability
+        
         robot.control_dofs_position(target_pos)
 
         # Step simulation

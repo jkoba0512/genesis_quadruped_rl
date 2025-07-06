@@ -11,10 +11,13 @@ __author__ = "Genesis Humanoid Learning Project"
 from .calculator import RobotGroundingCalculator
 from .detector import FootDetector
 from .utils import get_lowest_z_position, calculate_grounding_offset
+from .robot_types import RobotTypeDetector, RobotType
 
 __all__ = [
     'RobotGroundingCalculator',
     'FootDetector',
+    'RobotTypeDetector',
+    'RobotType',
     'get_lowest_z_position',
     'calculate_grounding_offset'
 ]

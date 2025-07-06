@@ -138,9 +138,53 @@ class QuadrupedWalkingEnv(Env):
         print("Initializing Go2 robot in RL environment...")
         self.go2_robot.apply_natural_pose_and_grounding()
         
-        # Check final height
+        # CRITICAL FIX: Force robot to proper height multiple times
+        # The robot keeps settling too low, so we need aggressive height enforcement
+        print("🔧 AGGRESSIVE height fixing to prevent laying down...")
+        
+        # Multiple attempts to set proper height
+        target_height = 0.30  # Start higher to account for settling
+        for attempt in range(5):
+            current_pos = self.robot.get_pos().cpu().numpy()
+            print(f"   Attempt {attempt+1}: Current height {current_pos[2]:.3f}m, setting to {target_height}m")
+            
+            # Force position
+            self.robot.set_pos([0.0, 0.0, target_height])
+            
+            # Apply standing pose with force
+            pose_positions = self.go2_robot.DEFAULT_JOINT_POS.copy()
+            current_all_positions = self.robot.get_dofs_position()
+            new_all_positions = current_all_positions.clone()
+            
+            for i, joint_idx in enumerate(self.go2_robot.controllable_joints):
+                new_all_positions[joint_idx] = pose_positions[i]
+            
+            # Use set_dofs_position for immediate effect
+            self.robot.set_dofs_position(new_all_positions)
+            
+            # Minimal settling
+            for _ in range(5):
+                self.scene.step()
+            
+            # Check if height is acceptable
+            new_pos = self.robot.get_pos().cpu().numpy()
+            if new_pos[2] >= 0.20:  # Accept if above 0.20m
+                print(f"   ✅ Success! Height stabilized at {new_pos[2]:.3f}m")
+                break
+            else:
+                target_height += 0.05  # Try higher next time
+        
+        # Final verification and emergency fix
         final_state = self.go2_robot.get_state()
-        print(f"✅ Go2 ready for RL at height: {final_state['base_pos'][2]:.3f}m")
+        final_height = final_state['base_pos'][2]
+        print(f"📊 Final height check: {final_height:.3f}m")
+        
+        if final_height < 0.15:
+            print(f"🚨 EMERGENCY: Height still too low! Forcing to 0.35m")
+            # Emergency: set much higher and freeze position
+            self.robot.set_pos([0.0, 0.0, 0.35])
+            # Skip physics settling
+            final_height = 0.35
 
         print(f"Loaded Go2 robot with {self.num_joints} controllable DOFs")
         print(f"Robot has {self.robot.n_links} links")
@@ -251,12 +295,20 @@ class QuadrupedWalkingEnv(Env):
             stability_reward = 0.0
         total_reward += 0.3 * stability_reward  # Reduced weight vs humanoid
 
-        # 3. Height maintenance reward (quadruped-specific)
-        # Go2 should maintain ~0.36m height (natural settled height)
-        target_height = 0.36  # CORRECTED: Go2 natural standing height
-        height_diff = abs(pos[2] - target_height)
-        height_reward = max(0.0, 1.0 - 3.0 * height_diff)  # More sensitive to height changes
-        total_reward += 0.4 * height_reward  # Higher weight for quadruped
+        # 3. Height maintenance reward (quadruped-specific) - IMPROVED
+        # Go2 should maintain ~0.27m height (proper standing height)
+        target_height = 0.27  # CORRECTED: Go2 proper standing height
+        min_height = 0.15     # Below this = severe penalty
+        
+        if pos[2] < min_height:
+            # SEVERE penalty for laying down
+            height_reward = -10.0
+        else:
+            # Exponential reward for correct height
+            height_diff = abs(pos[2] - target_height)
+            height_reward = np.exp(-5.0 * height_diff)  # Strong reward for correct height
+        
+        total_reward += 2.5 * height_reward  # MUCH higher weight!
 
         # 4. Energy efficiency penalty
         # Penalize excessive joint velocities
@@ -281,9 +333,31 @@ class QuadrupedWalkingEnv(Env):
             symmetry_reward = max(0.0, 1.0 - 2.0 * symmetry_diff)
             total_reward += 0.2 * symmetry_reward
 
-        # 7. Ground contact penalty (quadruped should stay grounded)
+        # 7. Leg extension reward (prevent leg collapse) - NEW!
+        # Reward for keeping legs properly extended
+        leg_extension_reward = 0.0
+        if hasattr(self.go2_robot, 'get_joint_positions'):
+            joint_positions = self.go2_robot.get_joint_positions()
+            if len(joint_positions) >= 12:
+                # Thigh joints should be ~0.6 rad (indices 4-7)
+                thigh_joints = joint_positions[4:8]
+                for thigh_angle in thigh_joints:
+                    thigh_error = abs(thigh_angle - 0.6)
+                    leg_extension_reward += np.exp(-2.0 * thigh_error)
+                
+                # Calf joints should be ~-1.2 rad (indices 8-11)
+                calf_joints = joint_positions[8:12]
+                for calf_angle in calf_joints:
+                    calf_error = abs(calf_angle - (-1.2))
+                    leg_extension_reward += np.exp(-2.0 * calf_error)
+                
+                leg_extension_reward /= 8.0  # Average
+        
+        total_reward += 1.0 * leg_extension_reward  # High weight for leg extension
+        
+        # 8. Ground contact penalty (quadruped should stay grounded)
         # Penalize if robot jumps too high (more lenient during initial settling)
-        height_penalty_threshold = 2.0 if self.current_step < 10 else 0.6
+        height_penalty_threshold = 1.5 if self.current_step < 10 else 0.8
         if pos[2] > height_penalty_threshold:
             total_reward -= 0.5
 
@@ -301,8 +375,10 @@ class QuadrupedWalkingEnv(Env):
         pos = self.robot.get_pos().cpu().numpy()
         quat = self.robot.get_quat().cpu().numpy()
 
-        # 1. Height termination - quadruped fell down or flipped
-        if pos[2] < 0.05:  # Allow robot to settle lower while still upright
+        # 1. Height termination - EXTENDED GRACE PERIOD for learning
+        # Allow more time for robot to learn balance before strict height enforcement
+        min_height = 0.08 if self.current_step < 20 else 0.12  # Extended grace period
+        if pos[2] < min_height:
             return True
 
         # 2. Extreme tilt termination - quadruped flipped over
